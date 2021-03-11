@@ -1,9 +1,8 @@
-import point_cloud_utils
+import minimal_pytorch_rasterizer as mpr
 
 import torch
 
 from skimage import io
-from pose import Pose
 import numpy as np
 import argparse
 import time
@@ -35,7 +34,7 @@ def print_t(t_hist, t_names, skip_fraq=0.1):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--repeat', type=int, default=1)
+    parser.add_argument('--repeat', type=int, default=1000)
     parser.add_argument('--double', action='store_true')
     parsed_args = parser.parse_args()
     return parsed_args
@@ -56,7 +55,7 @@ def calculate_timings_0(vertices_cpu, uv_cpu, faces_cpu, pinhole, repeat, dtype=
         faces = torch.tensor(faces_cpu, dtype=torch.int32, device='cuda:0')
 
         t1 = time.time()
-        projected = point_cloud_utils.project_mesh(vertices, faces, vertice_values, pinhole)
+        projected = mpr.project_mesh(vertices, faces, vertice_values, pinhole)
 
         t2 = time.time()
         if it == 0:
@@ -87,7 +86,7 @@ def calculate_timings_1(vertices_cpu, uv_cpu, faces_cpu, pinhole, repeat, dtype=
         elif it == 1:
             start = time.time()
 
-        projected = point_cloud_utils.project_mesh(vertices, faces, vertice_values, pinhole)
+        projected = mpr.project_mesh(vertices, faces, vertice_values, pinhole)
         torch.cuda.synchronize()
 
         if it == 0:
@@ -109,27 +108,19 @@ def test_project_mesh(repeat, double=False):
     faces_cpu = mesh_data['faces']
     uv_cpu = mesh_data['uv']
 
-    pinhole = point_cloud_utils.Pinhole2D(
+    pinhole = mpr.Pinhole2D(
         fx=500, fy=500,
         cx=500, cy=500,
         h=1000, w=1000
     )
 
-    pose = Pose(
-        R=[
-            [1., 0., 0.],
-            [0., -1., 0.],
-            [0., 0., -1.]
-        ],
-        t=[
-            [0.],
-            [-0.3],
-            [1.2]
-        ]
-    )
-
-    vertices_cpu = pose.R @ np.swapaxes(vertices_cpu, 0, 1) + pose.t
-    vertices_cpu = np.swapaxes(vertices_cpu, 0, 1)
+    R = np.array([
+        [1., 0., 0.],
+        [0., -1., 0.],
+        [0., 0., -1.]
+    ])
+    t = np.array([[0., -0.3, 1.2]])
+    vertices_cpu = vertices_cpu @ R.T + t
 
     dtype = torch.float64 if double else torch.float32
     calculate_timings_0(vertices_cpu, uv_cpu, faces_cpu, pinhole, repeat, dtype=dtype)

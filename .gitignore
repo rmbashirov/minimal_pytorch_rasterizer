@@ -1,4 +1,4 @@
-point_cloud_utils.egg-info/*
+minimal_pytorch_rasterizer.egg-info/*
 dist/*
 build/*
 
@@ -16,3 +16,4 @@ __pycache__
 
 example/tmp_u.png
 example/tmp_v.png
+

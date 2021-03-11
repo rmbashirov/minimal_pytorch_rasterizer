@@ -1,4 +1,4 @@
-import point_cloud_utils
+import minimal_pytorch_rasterizer as mpr
 import torch
 import cv2
 import numpy as np
@@ -20,26 +20,26 @@ R = torch.tensor(cv2.Rodrigues(np.array([0.5, 0.8, 0.2]))[0], dtype=dtype, devic
 t = torch.tensor([-0.5, -0.5, 1.3], dtype=dtype, device=device)
 vertices = vertices @ R.T + t
 
-pinhole2d = point_cloud_utils.Pinhole2D(
-    fx=200, fy=200,
+pinhole2d = mpr.Pinhole2D(
+    fx=250, fy=200,
     cx=160, cy=120,
     w=320, h=240,
 )
 
-z_buffer = point_cloud_utils.project_mesh(
+z_buffer = mpr.project_mesh(
     vertices=vertices,
     faces=faces,
     vertice_values=vertices[:, [2]],  # take z coordinate as values
     pinhole=pinhole2d
 )
-vis_z_buffer_cpu = point_cloud_utils.vis_z_buffer(z_buffer)
+vis_z_buffer_cpu = mpr.vis_z_buffer(z_buffer)
 cv2.imwrite(f'./depth.png', vis_z_buffer_cpu)
 
 
-coords, normals = point_cloud_utils.estimate_normals(
+coords, normals = mpr.estimate_normals(
     vertices=vertices,
     faces=faces,
     pinhole=pinhole2d
 )
-vis_normals_cpu = point_cloud_utils.vis_normals(coords, normals)
+vis_normals_cpu = mpr.vis_normals(coords, normals)
 cv2.imwrite(f'./normals.png', vis_normals_cpu)
