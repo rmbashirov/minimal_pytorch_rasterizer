@@ -189,8 +189,8 @@ __global__ void rasterize_cuda_kernel(
     const int bottom = min(top + vertices_per_thread_y, max_yi);
 
     scalar_t x, y, face_z, wa, wb, wc, wsum;
-    for (int i = top; i < bottom; i++) {
-        for (int j = left; j < right; j++) {
+    for (int i = top; i <= bottom; i++) {
+        for (int j = left; j <= right; j++) {
             x = 2 * ((scalar_t)j + 0.5) / W - 1;
             y = 2 * ((scalar_t)i + 0.5) / H - 1;
 
@@ -296,8 +296,8 @@ __global__ void interpolate_cuda_kernel(
     const int bottom = min(top + vertices_per_thread_y, max_yi);
 
     scalar_t x, y, face_z, wa, wb, wc, wsum;
-    for (int i = top; i < bottom; i++) {
-        for (int j = left; j < right; j++) {
+    for (int i = top; i <= bottom; i++) {
+        for (int j = left; j <= right; j++) {
             x = 2 * ((scalar_t)j + 0.5) / W - 1;
             y = 2 * ((scalar_t)i + 0.5) / H - 1;
 
@@ -423,8 +423,8 @@ __global__ void estimate_normals_cuda_kernel(
     const int bottom = min(top + vertices_per_thread_y, max_yi);
 
     scalar_t x, y, face_z, wa, wb, wc, wsum;
-    for (int i = top; i < bottom; i++) {
-        for (int j = left; j < right; j++) {
+    for (int i = top; i <= bottom; i++) {
+        for (int j = left; j <= right; j++) {
             x = 2 * ((scalar_t)j + 0.5) / W - 1;
             y = 2 * ((scalar_t)i + 0.5) / H - 1;
 

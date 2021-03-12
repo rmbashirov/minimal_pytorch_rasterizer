@@ -3,8 +3,6 @@ FROM nvidia/cudagl:10.2-devel-ubuntu18.04
 ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# SHELL ["/bin/bash", "--login", "-c"]
-
 RUN apt-get update && apt-get install -y \
     build-essential \
     rsync \
@@ -45,6 +43,8 @@ RUN apt-get update && apt-get install -y \
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility,graphics
 ENV PYOPENGL_PLATFORM egl
+ENV LD_LIBRARY_PATH /usr/lib64:$LD_LIBRARY_PATH
+# nvdiffrast python package is installed from requirements.txt then
 
 
 RUN echo '{"file_format_version": "1.0.0", "ICD": {"library_path": "libEGL_nvidia.so.0"}}' | \
@@ -96,8 +96,6 @@ RUN pip --no-cache-dir install -r /opt/requirements.txt
 
 COPY ./ /opt/minimal_pytorch_rasterizer
 RUN cd /opt/minimal_pytorch_rasterizer && ./setup.sh
-
-ENV LD_LIBRARY_PATH /usr/lib64:$LD_LIBRARY_PATH
 
 USER $USERNAME:$USERNAME
 ENTRYPOINT ["fixuid", "-q"]

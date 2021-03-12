@@ -1,19 +1,21 @@
-import numpy as np
-
 import torch
 
 
 def vis_z_buffer(z, percentile=1, vis_pad=0.2):
-    z_cpu = z[:, :, 0].cpu().numpy()
-    mask = z_cpu > 1e-5
-    vmin = np.percentile(z_cpu[mask], percentile)
-    vmax = np.percentile(z_cpu[mask], 100 - percentile)
-    pad = (vmax - vmin) * vis_pad
-    vmin_padded = vmin - pad
-    vmax_padded = vmax + pad
-    z_cpu[mask] = vmin + vmax - z_cpu[mask]
-    z_cpu = (z_cpu - vmin_padded) / (vmax_padded - vmin_padded)
-    z_cpu = (z_cpu * 255).round().clip(0, 255).astype(np.uint8)
+    z = z[:, :, 0]
+    mask = z > 1e-5
+    if torch.sum(mask) == 0:
+        z[...] = 0
+    else:
+        vmin = torch.quantile(z[mask], percentile / 100)
+        vmax = torch.quantile(z[mask], 1 - percentile / 100)
+        pad = (vmax - vmin) * vis_pad
+        vmin_padded = vmin - pad
+        vmax_padded = vmax + pad
+        z[mask] = vmin + vmax - z[mask]
+        z = (z - vmin_padded) / (vmax_padded - vmin_padded)
+        z = torch.clip(torch.round(z * 255), 0, 255)
+    z_cpu = z.to(dtype=torch.uint8).detach().cpu().numpy()
     return z_cpu
 
 
@@ -30,6 +32,6 @@ def vis_normals(coords, normals, vis_pad=0.2):
     vis = torch.zeros((h, w), dtype=coords.dtype, device=coords.device)
     vis[mask] = torch.clamp(dot, 0, 1) * (1 - 2 * vis_pad) + vis_pad
 
-    vis_cpu = (vis * 255).to(dtype=torch.uint8).cpu().numpy()
+    vis_cpu = (vis * 255).to(dtype=torch.uint8).detach().cpu().numpy()
 
     return vis_cpu

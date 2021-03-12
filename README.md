@@ -16,6 +16,7 @@ import torch
 import cv2
 import numpy as np
 
+
 dtype = torch.float32
 device = torch.device('cuda:0')
 
@@ -46,7 +47,7 @@ z_buffer = mpr.project_mesh(
     pinhole=pinhole2d
 )
 vis_z_buffer_cpu = mpr.vis_z_buffer(z_buffer)
-cv2.imwrite(f'./depth.png', vis_z_buffer_cpu)
+cv2.imwrite('./depth.png', vis_z_buffer_cpu)
 
 
 coords, normals = mpr.estimate_normals(
@@ -55,7 +56,7 @@ coords, normals = mpr.estimate_normals(
     pinhole=pinhole2d
 )
 vis_normals_cpu = mpr.vis_normals(coords, normals)
-cv2.imwrite(f'./normals.png', vis_normals_cpu)
+cv2.imwrite('./normals.png', vis_normals_cpu)
 ``` 
 Will produce:
 
